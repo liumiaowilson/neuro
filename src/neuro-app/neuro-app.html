@@ -106,6 +106,9 @@
       .player-display {
         flex: 1;
       }
+      #inputFeedback {
+        color: #fff;
+      }
     </style>
 
     <neuro-toolbar
@@ -121,6 +124,10 @@
     <div id="output" connected$="[[_isConnected]]"></div>
 
     <input id="input" type="text" value="{{input::input}}" on-keydown="_checkEnter"></input>
+
+    <div id="inputFeedback">
+        {{inputFeedback}}
+    </div>
 
     <div class="bottom-toolbar" hidden$="[[!playerData]]">
       <player-display class="player-display" data="[[playerData]]"></player-display>
@@ -178,6 +185,11 @@
           input: {
             type: String,
             value: ''
+          },
+
+          inputFeedback: {
+              type: String,
+              value: '...'
           },
 
           playerData: {
@@ -298,6 +310,7 @@
       }
 
       _checkEnter(e) {
+        const self = this;
         if (e.key === 'Enter') {
           const message = this.input.trim();
           if (!message.length) {
@@ -337,6 +350,65 @@
             this.input = '';
           }
         }
+
+        if(e.key === 'Tab') {
+          let line = self.input;
+          let args = line.split(" ");
+          let last = args[args.length - 1];
+          let completion = self._complete(args);
+          completion = completion.filter(word => word.startsWith(last));
+
+          self.inputFeedback = completion.join(" ");
+          self.inputFeedback = self.inputFeedback || "...";
+
+          if(completion.length === 1) {
+            self.input = [...args.slice(0, args.length - 1), completion[0]].join(" ");
+          }
+          else if(completion.length > 1) {
+            let pos = last.length;
+            let common;
+            let allMet = true;
+            while(allMet && pos++ <= completion[0].length) {
+              common = completion[0].substring(0, pos);
+              completion.forEach(cmd => {
+                if(allMet && !cmd.startsWith(common)) {
+                  allMet = false;
+                }
+              });
+            }
+
+            if(allMet) {
+              self.input = [...args.slice(0, args.length - 1), common].join(" ");
+            }
+            else {
+              self.input = [...args.slice(0, args.length - 1), common.substring(0, common.length - 1)].join(" ");
+            }
+          }
+
+          e.preventDefault();
+        }
+      }
+
+      _complete(args) {
+        if(args.length === 1) {
+          return this.playerData.commands;
+        }
+        else if(args.length > 1) {
+          let data = {};
+          for(let i = 1; i < args.length; i++) {
+            let key = args[i - 1];
+            if(i === 1) {
+              data = this.playerData.commandOptions[key];
+            }
+            else {
+              data = data[key];
+            }
+            data = data || {};
+          }
+          return Object.keys(data);
+        }
+
+        return [];
       }
 
       _effectsVisible() {
