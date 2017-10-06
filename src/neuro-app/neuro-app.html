@@ -389,10 +389,30 @@
         }
       }
 
+      _breakDown(options) {
+        let data = {};
+        if(!options || Object.keys(options).length === 0) {
+          return data;
+        }
+
+        Object.keys(options).forEach(key => {
+          let value = options[key];
+          let newValue = this._breakDown(value);
+          key.split(" ").forEach(keyword => {
+            keyword = keyword.trim().toLowerCase();
+            data[keyword] = newValue;
+          });
+        });
+
+        return data;
+      }
+
       _complete(args) {
         if(!this.playerData) {
           return [];
         }
+
+        let commandOptions = this._breakDown(this.playerData.commandOptions);
 
         if(args.length === 1) {
           return this.playerData.commands;
@@ -402,7 +422,7 @@
           for(let i = 1; i < args.length; i++) {
             let key = args[i - 1];
             if(i === 1) {
-              data = this.playerData.commandOptions[key];
+              data = commandOptions[key];
             }
             else {
               data = data[key];
