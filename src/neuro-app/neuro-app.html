@@ -390,6 +390,10 @@
       }
 
       _complete(args) {
+        if(!this.playerData) {
+          return [];
+        }
+
         if(args.length === 1) {
           return this.playerData.commands;
         }
