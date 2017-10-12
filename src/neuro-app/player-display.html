@@ -19,7 +19,7 @@
         align-items: center;
       }
       neuro-statbar {
-        width: 320px;
+        width: 220px;
       }
       .label {
         color: #fff;
@@ -53,6 +53,13 @@
       <div class="stat">
         <div class="label">Energy</div>
         <neuro-statbar class="energy" current-value="[[data.attributes.energy.current]]" max-value="[[data.attributes.energy.max]]"></neuro-statbar>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[data.attributes.stamina]]">
+      <div class="stat">
+        <div class="label">Stamina</div>
+        <neuro-statbar class="favor" current-value="[[data.attributes.stamina.current]]" max-value="[[data.attributes.stamina.max]]"></neuro-statbar>
       </div>
     </template>
 
@@ -90,4 +97,3 @@
     window.customElements.define(PlayerDisplay.is, PlayerDisplay);
   </script>
 </dom-module>
-
